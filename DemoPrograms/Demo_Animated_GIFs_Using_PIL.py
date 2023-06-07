@@ -14,7 +14,7 @@ import PySimpleGUI as sg
     Copyright 2020 PySimpleGUI.org
 """
 
-gif_filename = r'/home/mugee/GIT/PySimpleGUI/DemoPrograms/exampleGIF.gif'
+gif_filename = r'PySimpleGUI/DemoPrograms/exampleGIF.gif'
 
 layout = [[sg.Text('Happy Thursday!', background_color='#A37A3B', text_color='#FFF000',  justification='c', key='-T-', font=("Bodoni MT", 40))],
           [sg.Image(key='-IMAGE-')]]
