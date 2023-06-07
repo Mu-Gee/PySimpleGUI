@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-version = __version__ = "4.61.0.166 Unreleased"
+version = __version__ = "4.61.0.184 Unreleased"
 
 _change_log = """
     Changelog since 4.60.0 released to PyPI on 8-May-2022
@@ -159,7 +159,7 @@ _change_log = """
         Use Withdraw to hide window during creation
     4.61.0.63
         Addition of checklist item when logging new issue to  GitHub - upgraded to latest version of PySimpleGUI on PyPI
-        Listbox justification parameter found to not be implemented on some early verions of tkinter so had to protect this situation. This new feature crached on the Pi for example
+        Listbox justification parameter found to not be implemented on some early verions of tkinter so had to protect this situation. This new feature crashed on the Pi for example
     4.61.0.64
         Allow set_options(window_location=None) to indicate the OS should provide the window location.  
             This will stop the Alpha channel being set to 0 when the window is created
@@ -382,7 +382,7 @@ _change_log = """
     4.61.0.157
         Added the _optional_window_data function that is used to help with local PySimpleGUI testing of release candidates. Not meant to be used by end-users.
     4.61.0.158
-        Checked checkbox activeforeground to be the same as the text so mouseover doesn't change color
+        Changed Checkbox activeforeground to be the same as the text so mouseover doesn't change color
     4.61.0.159
         New Global Settings feature - Window watermarking. Can be forced on temporarily by settings watermark=True in your Window creation
     4.61.0.160
@@ -400,6 +400,44 @@ _change_log = """
         Added new method - set_ibeam_color to Input, Multiline and Spin elements.  Combo is a ttk element so it's not available using this call yet
     4.61.0.166
         New Udemy coupon
+    4.61.0.167
+        New Udemy coupon
+        Fix for bad user settings key for user watermark. Added Python version to watermark
+    4.61.0.168
+       Changed Radio activeforeground to be the same as the text so mouseover doesn't change color
+    4.61.0.169
+        Allow no end-key to be specified for perform_long_operation/start_thread.  Careful with backward compatibility! If you skip adding parm on old versions of PySimpleGUI then it'll not work.
+    4.61.0.170
+        Possible fix for Mac Input Element issue that's been happening with no-titlebar windows on MacOS 13.2.1 Ventura
+    4.61.0.171
+        Added formatted_datetime_now function for easy timestamps for logging
+    4.61.0.172
+        Added upgrade service - No notification popups should be shown yet.  Don't want to SPAM users while testing
+    4.61.0.173
+        Made changing the "Show only critical" setting in global settings take effect immediately rather than waiting until closed settings window
+        Added timer_stop_usec to return timer value in microseconds
+    4.61.0.174
+        Overwrite upgrade data if any portion has changed
+    4.61.0.175
+        Notification window - added countdown counter. Added hand cursor if message is a link and enable clicking of link to open the browser to that link
+    4.61.0.176
+        Improved linux distro detection
+    4.61.0.177
+        Custom Titlebar - Support for disabling resizing (maximizing too), support for disable minimize and disable close
+    4.61.0.178
+        Input element - fix for bug with text color & logic wasn't quite right with the "read for disabled" stuff in the update as well as when making window
+    4.61.0.179
+        New Udemy coupon
+    4.61.0.180
+        Removed Security tab from system settings
+    4.61.0.181
+        Added check for None and COLOR_SYSTEM_DEFAULT before any colors being set in Input.update
+    4.61.0.182
+        Only enable the Mac alpha channel 0.99 patch when tkinter version is 8.6.12. Have learned this is not needed for any other tkinter version
+    4.61.0.183
+        Show Critical upgrade service messages.  Removed the extra upgrade from github button from tab.
+    4.61.0.184
+        Fix for Combo.update background color changing incorrect widget setting.
     """
 
 __version__ = version.split()[0]  # For PEP 396 and PEP 345
@@ -423,7 +461,7 @@ port = 'PySimpleGUI'
 
 
 """
-    Copyright 2018, 2019, 2020, 2021, 2022 PySimpleGUI(tm)
+    Copyright 2018, 2019, 2020, 2021, 2022, 2023 PySimpleGUI(tm)
 
     Before getting into the details, let's talk about the high level goals of the PySimpleGUI project.
 
@@ -623,9 +661,9 @@ def timer_start():
 
 def timer_stop():
     """
-    Time your code easily.... stop the timer and print the number of milliseconds since the timer start
+    Time your code easily.... stop the timer and print the number of MILLISECONDS since the timer start
 
-    :return: delta in milliseconds from timer_start was called
+    :return: delta in MILLISECONDS from timer_start was called
     :rtype:  int
     """
     global g_time_delta, g_time_end
@@ -633,6 +671,19 @@ def timer_stop():
     g_time_end = time.time()
     g_time_delta = g_time_end - g_time_start
     return int(g_time_delta * 1000)
+
+def timer_stop_usec():
+    """
+    Time your code easily.... stop the timer and print the number of MICROSECONDS since the timer start
+
+    :return: delta in MICROSECONDS from timer_start was called
+    :rtype:  int
+    """
+    global g_time_delta, g_time_end
+
+    g_time_end = time.time()
+    g_time_delta = g_time_end - g_time_start
+    return int(g_time_delta * 1000000)
 
 
 def _timeit(func):
@@ -688,6 +739,19 @@ def _timeit_summary(func):
         return result
 
     return wrapper
+
+
+def formatted_datetime_now():
+    """
+    Returns a string with current date and time formatted YYYY-MM-DD HH:MM:SS for easy logging
+
+    :return:    String with date and time formatted YYYY-MM-DD  HH:MM:SS
+    :rtype:     (str)
+    """
+    now = datetime.datetime.now()
+    current_time = now.strftime("%Y-%m-%d %H:%M:%S")
+    return current_time
+
 
 
 def running_linux():
@@ -2469,11 +2533,28 @@ class Input(Element):
             _error_popup_with_traceback('Error in Input.update - The window was closed')
             return
 
+        if background_color not in (None, COLOR_SYSTEM_DEFAULT):
+            self.TKEntry.configure(background=background_color)
+            self.BackgroundColor = background_color
+        if text_color not in (None, COLOR_SYSTEM_DEFAULT):
+            self.TKEntry.configure(fg=text_color)
+            self.TextColor = text_color
+
         if disabled is True:
-            self.TKEntry['state'] = 'readonly' if self.UseReadonlyForDisable else 'disabled'
+            if self.UseReadonlyForDisable:
+                if self.disabled_readonly_text_color not in (None, COLOR_SYSTEM_DEFAULT):
+                    self.TKEntry.configure(fg=self.disabled_readonly_text_color)
+                self.TKEntry['state'] = 'readonly'
+            else:
+                if self.TextColor not in (None, COLOR_SYSTEM_DEFAULT):
+                    self.TKEntry.configure(fg=self.TextColor)
+                self.TKEntry['state'] = 'disabled'
+            self.Disabled = True
         elif disabled is False:
-            self.TKEntry['state'] = 'readonly' if self.ReadOnly else 'normal'
-        self.Disabled = disabled if disabled is not None else self.Disabled
+            self.TKEntry['state'] = 'normal'
+            if self.TextColor not in (None, COLOR_SYSTEM_DEFAULT):
+                self.TKEntry.configure(fg=self.TextColor)
+            self.Disabled = False
 
         if readonly is True:
             self.TKEntry['state'] = 'readonly'
@@ -2482,10 +2563,7 @@ class Input(Element):
 
 
 
-        if background_color not in (None, COLOR_SYSTEM_DEFAULT):
-            self.TKEntry.configure(background=background_color)
-        if text_color not in (None, COLOR_SYSTEM_DEFAULT):
-            self.TKEntry.configure(fg=text_color)
+
         if value is not None:
             if paste is not True:
                 try:
@@ -2763,12 +2841,12 @@ class Combo(Element):
         style_name = self.ttk_style_name
         if text_color is not None:
             combostyle.configure(style_name, foreground=text_color)
-            combostyle.configure(style_name, selectbackground=text_color)
+            combostyle.configure(style_name, selectforeground=text_color)
             combostyle.configure(style_name, insertcolor=text_color)
             combostyle.map(style_name, fieldforeground=[('readonly', text_color)])
             self.TextColor = text_color
         if background_color is not None:
-            combostyle.configure(style_name, selectforeground=background_color)
+            combostyle.configure(style_name, selectbackground=background_color)
             combostyle.map(style_name, fieldbackground=[('readonly', background_color)])
             combostyle.configure(style_name, fieldbackground=background_color)
             self.BackgroundColor = background_color
@@ -12615,7 +12693,7 @@ class Window:
         return grab
 
 
-    def perform_long_operation(self, func, end_key):
+    def perform_long_operation(self, func, end_key=None):
         """
         Call your function that will take a long time to execute.  When it's complete, send an event
         specified by the end_key.
@@ -12632,8 +12710,8 @@ class Window:
 
         :param func:    A lambda or a function name with no parms
         :type func:     Any
-        :param end_key: The key that will be generated when the function returns
-        :type end_key:  (Any)
+        :param end_key: Optional key that will be generated when the function returns
+        :type end_key:  (Any | None)
         :return:        The id of the thread
         :rtype:         threading.Thread
         """
@@ -12739,14 +12817,17 @@ class Window:
         :return:
         """
         if key == TITLEBAR_MINIMIZE_KEY:
-            self._custom_titlebar_minimize()
+            if not self.DisableMinimize:
+                self._custom_titlebar_minimize()
         elif key == TITLEBAR_MAXIMIZE_KEY:
-            if self.maximized:
-                self.normal()
-            else:
-                self.maximize()
+            if self.Resizable:
+                if self.maximized:
+                    self.normal()
+                else:
+                    self.maximize()
         elif key == TITLEBAR_CLOSE_KEY:
-            self._OnClosingCallback()
+            if not self.DisableClose:
+                self._OnClosingCallback()
 
 
     def timer_start(self, frequency_ms, key=EVENT_TIMER, repeating=True):
@@ -12950,14 +13031,15 @@ def _long_func_thread(window, end_key, original_func):
 
     :param window:        The window that will get the event
     :type window:         (Window)
-    :param end_key:       The event that will be sent when function returns
-    :type end_key:        (Any)
+    :param end_key:       The event that will be sent when function returns. If None then no event will be sent when exiting thread
+    :type end_key:        (Any|None)
     :param original_func: The user's function that is called. Can be a function with no arguments or a lambda experession
     :type original_func:  (Any)
     """
 
     return_value = original_func()
-    window.write_event_value(end_key, return_value)
+    if end_key is not None:
+        window.write_event_value(end_key, return_value)
 
 
 def _exit_mainloop(exiting_window):
@@ -16676,7 +16758,7 @@ def PackFormIntoFrame(form, containing_frame, toplevel_form):
                     element.TKEntry.configure(selectforeground=element.selected_text_color)
                 if element.disabled_readonly_background_color not in (None, COLOR_SYSTEM_DEFAULT):
                     element.TKEntry.config(readonlybackground=element.disabled_readonly_background_color)
-                if element.disabled_readonly_text_color not in (None, COLOR_SYSTEM_DEFAULT):
+                if element.disabled_readonly_text_color not in (None, COLOR_SYSTEM_DEFAULT) and element.Disabled:
                     element.TKEntry.config(fg=element.disabled_readonly_text_color)
 
                 element.Widget.config(highlightthickness=0)
@@ -17134,6 +17216,7 @@ def PackFormIntoFrame(form, containing_frame, toplevel_form):
                     element.TKRadio.configure(activebackground=element.BackgroundColor)
                 if text_color is not None and text_color != COLOR_SYSTEM_DEFAULT:
                     element.TKRadio.configure(fg=text_color)
+                    element.TKRadio.configure(activeforeground=text_color)
 
                 element.Widget.configure(highlightthickness=1)
                 if element.BackgroundColor != COLOR_SYSTEM_DEFAULT:
@@ -18224,7 +18307,10 @@ def StartupTK(window):
 
     # for the Raspberry Pi. Need to set the attributes here, prior to the building of the window
     # so going ahead and doing it for all platforms, in addition to doing it after the window is packed
-    _no_titlebar_setup(window)
+    # 2023-April - this call seems to be causing problems on MacOS 13.2.1 Ventura.  Input elements become non-responsive
+    # if this call is made here and at the end of building the window
+    if not running_mac():
+        _no_titlebar_setup(window)
 
     if not window.Resizable:
         root.resizable(False, False)
@@ -23837,6 +23923,10 @@ def _mac_should_set_alpha_to_99():
     if not ENABLE_MAC_ALPHA_99_PATCH:
         return False
 
+    # ONLY enable this patch for tkinter version 8.6.12
+    if framework_version != '8.6.12':
+        return False
+
     # At this point, we're running a Mac and the alpha patch is enabled
     # Final check is to see if Mac OS version is 12.3 or later
     try:
@@ -24796,6 +24886,203 @@ RED_X_BASE64 = b'iVBORw0KGgoAAAANSUhEUgAAAFoAAABaCAYAAAA4qEECAAAQ5ElEQVR4nO1ca3S
 GREEN_CHECK_BASE64 = b'iVBORw0KGgoAAAANSUhEUgAAAFoAAABaCAYAAAA4qEECAAAJV0lEQVR4nO2cTWwc5RnHf8/M7Dq7ttdxIIIUcqGA1BQU6Ac9VSkp0NwoJE5PJJygKki9tIIEO7ND3ICEeqJUJYcqCYdKDoS0lWgpH21KuVShH/TjUolLkIpKguO1vWvvfDw9zOxH1l8zjnc3Xs/vFEXy7uzPz/7f93nnGUNKSkpKSkpKSkpKSkpKzyFMYDKC2e0L2TjYGN2+hN5DkXoVP1s4wdjgDwB4jEw3L6u30CguAJzCCV4YUp4bUuzC94BlZaclHx9hPwb78bELp8jJQaa1yrx65OQljhSe4DguLy8uOxUdhzAuDE5HkvvlEWbVRcgSYDKnHnn5CXbhSR5fXHYqemXCSj6Nj1M4Qb88wrR6EMkUpC47Jy8yFsm2sa58kZSlUYTTUVw4hRPkjIPMBC6ySDwoioHPJrEo65M8W3qJx8hwHBdS0UujTZVcLJwkLweY0cUlN35GEQJyYlLRJ3BKP2UEk9P4qejFWTyTibGFq1V2ViwqPMXRqRcYwUgzupXmha9YOJlIMoSZ7ROQEZBgJ6DsQNKKbmZBJsvBFeOilQCPQbGo6Ens0qNRdARpRddollwsnAwXPq0mkgwug2Ixq69glx7Fjr4ZoGlFhyzM5KSVrLgMSIZZfQWndKBWyYBCuo9erhlJIrnKgJGhrKdwSgeYwGSiIRnS7V1Dci2Tp9XDuLLZWJZaJdcyOTw6DZCGZNjIFR0eEDVJNsKFL4lkIsllPVVf+BaRDBu1olfTjCzEpX/pTG5lI1Z0Q7JdOEVeDqwik0PJtUweWZjJrWws0VfbjISv4TJghJlcLB2sL3yLxEUzGyc62tiMsEwl19gYFd2OZiRGXDSzESq67c1IHHq7ojvUjMShlyu6Y81IHHqzojvcjMSh9yq6C81IHHqtorvSjMShd0R3sRmJQ29ER5ebkTjEE21j8EWE/fhr8aZrTFhvgoaZbBxgJqgiZBO8xsJMXqNKblzkStgYOAQL/n2tUB9UKfy8W81IHJbPaBsLh4DRgS8wVvgWDkHrBE5Xscni4Bk69H2GjEeY1fluNCNxWLqid2FxDo9nCp8ny/v0yQ1U/L04M2d4mQyPhxM4XSOaAio4N391Wqbf0ECHUQzixuEaNiNxWLyi7Ujy6OBtZHkPU25gTj2yxgSjAw8vNlvWUWwsjuMOjt30tWlj5k019HoChPiL+5o2I3FYeGFhXHg8PXg7A/I2yHaq6gMGJoopwpz/MOMzZ5tnyzpGdH2FwzffM52f+Y1qsAUXH4n9iMOaNyNxuFJ0TfIPB29jSN5BZDvz6iFR9SoayTZw/YdwZs52NEai68uPfu7uSt/sO4oOJ5KsTZVcLB1sx+5iKRqiJzDZj8/TQ7eQ1z9iyk3M68IP0ZAtzLGP8akz0aJUbeuVRpKH7G1fKlmz7yoMJZdsZKgEHcnkVsKMtuuT7LeS1/eXlAy12TLBVyXHBIcH9uJQbeszHJHk3OEbvzJllkPJVYLYkgO8cOELGs3I/s5JBpDGE0XDOzD9NzBl+5KSm1ECTMACZoN9HJt5vS2ZXYuLseu/XO5z30T1uqvO5A7FRTMG1JoQ/2fkje1UtIoR40MIBj7gAXnjDKMD3+Y47ppWdiQ5Yw/dVelzf5tYsi6x8HVYMoSig7Cqze9SDi6QkyxBzFY7lB2OqW4yXmds6KHlHphJxGNkcPAyo1t3ehbvqOr1CSV3rBmJQ6Oldib/ic9ufP2EPjHR2LKlIZtXGRvYy+O49cfEVkO0T87bW+9ys/PnFN0SO5MVRZlnQLJUgsYpXAcXvsVIvutYilpmmyjzwXc4OnOmfmyZhFpcjA7d7fbxFnAdbszrCKfthYJAqfNbuOVodIb78bGxeH7qI6b1XlQvRJXtxXolwcADAkyxjBMjE3YmPIBPcObdLHkTb5JMsk8WEZVJqyRPUiwdBOhWJrdypQQHDxuLF6b/w4zeh+oFsmLFjhEDAx9fTcm99u8Xz47YI1mKaCzZtWZpdPhOt4+3UN2aSHIGUzAuDTK4xytefimKLqFLmdzK4mcD9Q89eBsZOYcl2xLFSEDAgBjGvPHruz++Ze8H2z4If1FLHbHWK3n4TjfrncOQYaoxF76G5MlBb2BPyfn4zx1poBKy8uldmNl/wkwoO9paSdX45b4P79t7esfpsLJaZdclb97pZv3fIxK/rQ4IyGJIwPRgMLS75Fw435Xzlxgs/ZU+F8XI81MfUeLrBPoxfSTZjWSYVVezwYOv3vm718SRULA2/XJr3xw7f5e7Sd9GjPiSw0w2BJnMycCuknPhfG23Euv6OkycOyxXnuaJbGdO/VhNTUhY2WX9lRZLD9ZFFzFx8Hgqv5NB6y2QrVQTZrLIpZybeaDsXPxL/TqvUeLeM2zIzsu7GHJTbCnQfGp2ln+V9rEDwcHjUP8d5M0/APE7vkgyyKWcl9tTcT45f61LhiR3weuyC7eS5z1MuXE1mY2rZxgt7cUevgPLfw9hc+yFL8pk4HK+2n9f+eh/P1gPkiHpuMHVNzUeebGoBOdAbiebYIGtVzKXM17fva7z6d/Wi2RYzVzHSjcHViIgICcGnoIbdXIr0ZTJltu323X+9+F6kgyrHaBZ7HbXfIJJzXDnIkiMRkbxyYiJcDE/n9lTPnpx3cRFM6ufVGptavpkG+UEMRKHmmT4LFPJ3O8eu/Z3F0txdSNhTU2N5PmFCvfgaxDd9r86wn2yic9UxjV2ueOX/75eJcNazN5F00uCYBS3OH7OO0I54XBhK7WFT+Qz5oxvMD75j/UsGdZqyDE8NDLEEc90ho94m3yHirooVuL3UHyyYgKfUuYBjk2tq93FUqztNKmNJQ6e6WwZ9Tb5R6moF8mOR9PCl5njAXd86q+9IBnaMbYbyRZ782iQ11B2gLXiO9UkazBJ1byXdZ7JrbRjPlqww3MMoyF7+RipLXyBTlK1dvVCJrfSvkH0aILJKBaeCXIyHi2QC2XXFz4uMufvZny25yRDOx+tiP6iYVAs/YiKHiYvGcLhhMYdj3omy6e43v29Khk68WhF7SD+SOEQ/XIsWiBNlCBqRi4xL9/stUxupf0PCx2PRnyfLT3HrH+YnFgoLhlMVC9T9nb3uuTOUptgOlI4xI+HlKOFixzqvwNoejwiZW2oCS0WnuBw4Z4r/i9ljWkePUj/ZHubsbFSySkpKSkpKSkpKSkpKSkpKW3g/3+PYisYNf7zAAAAAElFTkSuQmCC'
 
 
+
+'''
+M""MMMMM""M                                           dP          
+M  MMMMM  M                                           88          
+M  MMMMM  M 88d888b. .d8888b. 88d888b. .d8888b. .d888b88 .d8888b. 
+M  MMMMM  M 88'  `88 88'  `88 88'  `88 88'  `88 88'  `88 88ooood8 
+M  `MMM'  M 88.  .88 88.  .88 88       88.  .88 88.  .88 88.  ... 
+Mb       dM 88Y888P' `8888P88 dP       `88888P8 `88888P8 `88888P' 
+MMMMMMMMMMM 88            .88                                     
+            dP        d8888P                                      
+MP""""""`MM                            oo                   
+M  mmmmm..M                                                 
+M.      `YM .d8888b. 88d888b. dP   .dP dP .d8888b. .d8888b. 
+MMMMMMM.  M 88ooood8 88'  `88 88   d8' 88 88'  `"" 88ooood8 
+M. .MMM'  M 88.  ... 88       88 .88'  88 88.  ... 88.  ... 
+Mb.     .dM `88888P' dP       8888P'   dP `88888P' `88888P' 
+MMMMMMMMMMM
+'''
+
+__upgrade_server_ip = 'upgradeapi.PySimpleGUI.com'
+__upgrade_server_port = '5353'
+
+
+def __send_dict(ip, port, dict_to_send):
+    """
+    Send a dictionary to the upgrade server and get back a dictionary in response
+    :param ip:           ip address of the upgrade server
+    :type ip:            str
+    :param port:         port number
+    :type port:          int | str
+    :param dict_to_send: dictionary of items to send
+    :type dict_to_send:  dict
+    :return:             dictionary that is the reply
+    :rtype:              dict
+    """
+
+    # print(f'sending dictionary to ip {ip} port {port}')
+    try:
+        # Create a socket object
+        s = socket.socket()
+
+        s.settimeout(5.0)       # set a 5 second timeout
+
+        # connect to the server on local computer
+        s.connect((ip , int(port)))
+        # send a python dictionary
+        s.send(json.dumps(dict_to_send).encode())
+
+        # receive data from the server
+        reply_data = s.recv(1024).decode()
+        # close the connection
+        s.close()
+    except Exception as e:
+        # print(f'Error sending to server:', e)
+        # print(f'payload:\n', dict_to_send)
+        reply_data = e
+    try:
+        data_dict = json.loads(reply_data)
+    except Exception as e:
+        # print(f'UPGRADE THREAD - Error decoding reply {reply_data} as a dictionary. Error = {e}')
+        data_dict = {}
+    return data_dict
+
+def __show_previous_upgrade_information():
+    """
+    Shows information about upgrades if upgrade information is waiting to be shown
+
+    :return:
+    """
+
+    # if nothing to show, then just return
+    if pysimplegui_user_settings.get('-upgrade info seen-', True) and not pysimplegui_user_settings.get('-upgrade info available-', False):
+        return
+    if pysimplegui_user_settings.get('-upgrade show only critical-', False) and pysimplegui_user_settings.get('-severity level-', '') != 'Critical':
+        return
+
+    message1 = pysimplegui_user_settings.get('-upgrade message 1-', '')
+    message2 = pysimplegui_user_settings.get('-upgrade message 2-', '')
+    recommended_version = pysimplegui_user_settings.get('-upgrade recommendation-', '')
+    severity_level = pysimplegui_user_settings.get('-severity level-', '')
+
+    if severity_level != 'Critical':
+        return
+
+    layout = [[Image(EMOJI_BASE64_HAPPY_THUMBS_UP), T('An upgrade is available & recommended', font='_ 14')],
+              [T('It is recommended you upgrade to version {}'.format(recommended_version))],
+              [T(message1, enable_events=True, k='-MESSAGE 1-')],
+              [T(message2, enable_events=True, k='-MESSAGE 2-')],
+              [CB('Do not show this message again in the future', default=True, k='-SKIP IN FUTURE-')],
+              [B('Close'), T('This window auto-closes in'), T('30', k='-CLOSE TXT-', text_color='white', background_color='red'), T('seconds')]]
+
+    window = Window('PySimpleGUI Intelligent Upgrade', layout, finalize=True)
+    if 'http' in message1:
+        window['-MESSAGE 1-'].set_cursor('hand1')
+    if 'http' in message2:
+        window['-MESSAGE 2-'].set_cursor('hand1')
+
+    seconds_left=30
+    while True:
+        event, values = window.read(timeout=1000)
+        if event in ('Close', WIN_CLOSED) or seconds_left < 1:
+            break
+        if values['-SKIP IN FUTURE-']:
+            if not running_trinket():
+                pysimplegui_user_settings['-upgrade info available-'] = False
+                pysimplegui_user_settings['-upgrade info seen-'] = True
+        if event == '-MESSAGE 1-' and 'http' in message1 and webbrowser_available:
+            webbrowser.open_new_tab(message1)
+        elif event == '-MESSAGE 2-' and 'http' in message2 and webbrowser_available:
+            webbrowser.open_new_tab(message2)
+        window['-CLOSE TXT-'].update(seconds_left)
+        seconds_left -= 1
+
+    window.close()
+
+
+def __get_linux_distribution():
+    line_tuple = ('Linux Distro', 'Unknown', 'No lines Found in //etc//os-release')
+    try:
+        with open('/etc/os-release') as f:
+            data = f.read()
+        lines = data.split('\n')
+        for line in lines:
+            if line.startswith('PRETTY_NAME'):
+                line_split = line.split('=')[1].strip('"')
+                line_tuple = tuple(line_split.split(' '))
+                return line_tuple
+    except:
+        line_tuple = ('Linux Distro', 'Exception','Error reading//processing //etc//os-release')
+
+    return line_tuple
+
+
+def __perform_upgrade_check_thread():
+    # print(f'Upgrade thread...seen = {pysimplegui_user_settings.get("-upgrade info seen-", False)}')
+    try:
+        if running_trinket():
+            os_name = 'Trinket'
+            os_ver = __get_linux_distribution()
+        elif running_replit():
+            os_name = 'REPL.IT'
+            os_ver = __get_linux_distribution()
+        elif running_windows():
+            os_name = 'Windows'
+            os_ver = platform.win32_ver()
+        elif running_linux():
+            os_name = 'Linux'
+            os_ver = __get_linux_distribution()
+        elif running_mac():
+            os_name = 'Mac'
+            os_ver = platform.mac_ver()
+        else:
+            os_name = 'Other'
+            os_ver = ''
+
+        psg_ver = version
+        framework_ver = framework_version
+        python_ver = sys.version
+
+        upgrade_dict = {
+            'OSName' : str(os_name),
+            'OSVersion' : str(os_ver),
+            'PythonVersion' : str(python_ver),
+            'PSGVersion' : str(psg_ver),
+            'FrameworkName' : 'tkinter',
+            'FrameworkVersion' : str(framework_ver),
+        }
+        reply_data = __send_dict(__upgrade_server_ip, __upgrade_server_port, upgrade_dict)
+
+        recommended_version = reply_data.get('SuggestedVersion', '')
+        message1 = reply_data.get('Message1', '')
+        message2 = reply_data.get('Message2', '')
+        severity_level = reply_data.get('SeverityLevel', '')
+        # If any part of the reply has changed from the last reply, overwrite the data and set flags so user will be informed
+        if (message1 or message2) and not running_trinket():
+            if pysimplegui_user_settings.get('-upgrade message 1-', '') != message1 or \
+               pysimplegui_user_settings.get('-upgrade message 2-', '') != message2 or \
+               pysimplegui_user_settings.get('-upgrade recommendation-', '') != recommended_version or \
+               pysimplegui_user_settings.get('-severity level-', '') != severity_level:
+                # Save the data to the settings file
+                pysimplegui_user_settings['-upgrade info seen-'] = False
+                pysimplegui_user_settings['-upgrade info available-'] = True
+                pysimplegui_user_settings['-upgrade message 1-'] = message1
+                pysimplegui_user_settings['-upgrade message 2-'] = message2
+                pysimplegui_user_settings['-upgrade recommendation-'] = recommended_version
+                pysimplegui_user_settings['-severity level-'] = severity_level
+    except Exception as e:
+        reply_data = {}
+        # print('Upgrade server error', e)
+    # print(f'Upgrade Reply = {reply_data}')
+
+def __perform_upgrade_check():
+    # For now, do not show data returned. Still testing and do not want to "SPAM" users with any popups
+    __show_previous_upgrade_information()
+    threading.Thread(target=lambda: __perform_upgrade_check_thread(), daemon=True).start()
+
+
 # =========================================================================#
 # MP""""""`MM                                                                dP                  dP
 # M  mmmmm..M                                                                88                  88
@@ -25631,15 +25918,17 @@ def _global_settings_get_watermark_info():
         return
     forced =  Window._watermark_temp_forced
     prefix_text = pysimplegui_user_settings.get('-watermark text-', '')
-    ver_text = ' ' + version if pysimplegui_user_settings.get('-watermark ver-', False if not forced else True) or forced else ''
-    framework_ver_text = ' ' + framework_version  if pysimplegui_user_settings.get('-watermark framework ver-', False if not forced else True) or forced else ''
+
+    ver_text = ' ' + version.split(" ", 1)[0] if pysimplegui_user_settings.get('-watermark ver-', False if not forced else True) or forced else ''
+    framework_ver_text = ' Tk ' + framework_version  if pysimplegui_user_settings.get('-watermark framework ver-', False if not forced else True) or forced else ''
     watermark_font = pysimplegui_user_settings.get('-watermark font-', '_ 9 bold')
     # background_color = pysimplegui_user_settings.get('-watermark bg color-', 'window.BackgroundColor')
-    user_text = pysimplegui_user_settings.get('-watermark user text-', '')
+    user_text = pysimplegui_user_settings.get('-watermark text-', '')
+    python_text = ' Py {}.{}.{}'.format(sys.version_info.major, sys.version_info.minor, sys.version_info.micro)
     if user_text:
         text = str(user_text)
     else:
-        text = prefix_text + ver_text + framework_ver_text
+        text = prefix_text + ver_text + python_text + framework_ver_text
     Window._watermark = lambda window: Text(text, font=watermark_font, background_color= window.BackgroundColor)
 
 
@@ -25793,12 +26082,7 @@ def main_global_pysimplegui_settings():
 
 
 
-    # ------------------------- Security Tab -------------------------
-    security_tab = Tab('Security',
-                [[T('PySimpleGUI hashcode')], [T(scheck_hh())]],
-                       expand_x=True)
-
-    settings_tab_group = TabGroup([[theme_tab, ttk_tab, interpreter_tab, explorer_tab, editor_tab, snapshots_tab, security_tab ]])
+    settings_tab_group = TabGroup([[theme_tab, ttk_tab, interpreter_tab, explorer_tab, editor_tab, snapshots_tab,  ]])
     layout += [[settings_tab_group]]
               # [T('Buttons (Leave Unchecked To Use Default) NOT YET IMPLEMENTED!',  font='_ 16')],
               #      [Checkbox('Always use TTK buttons'), CBox('Always use TK Buttons')],
@@ -25856,6 +26140,11 @@ def main_global_pysimplegui_settings():
                     if key[0] == '-TTK SCROLL-':
                         pysimplegui_user_settings.set(json.dumps(('-ttk scroll-', key[1])), value)
 
+            # Upgrade Service Settings
+            pysimplegui_user_settings.set('-upgrade show only critical-', values['-UPGRADE SHOW ONLY CRITICAL-'])
+
+
+
             theme(new_theme)
 
             _global_settings_get_ttk_scrollbar_info()
@@ -25883,6 +26172,7 @@ def main_global_pysimplegui_settings():
             for i in range(100):
                 Print(i, keep_on_top=True)
             Print('Close this window to continue...', keep_on_top=True)
+
     window.close()
     # In case some of the settings were modified and tried out, reset the ttk info to be what's in the config file
     style = ttk.Style(Window.hidden_master_root)
@@ -26224,13 +26514,22 @@ def _create_main_window():
 
     frame6 = [[VPush()],[graph_elem]]
 
-    global_settings_tab_layout = [[T('Settings Filename:'), T(pysimplegui_user_settings.full_filename, s=(50,2))],
-                                  [T('Settings Dictionary:'), MLine(pysimplegui_user_settings, size=(50,8), write_only=True)],
-                                  ]
-
     themes_tab_layout = [[T('You can see a preview of the themes, the color swatches, or switch themes for this window')],
                          [T('If you want to change the default theme for PySimpleGUI, use the Global Settings')],
                          [B('Themes'), B('Theme Swatches'), B('Switch Themes')]]
+
+
+    upgrade_recommendation_tab_layout = [[T('Latest Recommendation and Announcements For You', font='_ 14')],
+                                         [T('Severity Level of Update:'), T(pysimplegui_user_settings.get('-severity level-',''))],
+                                         [T('Recommended Version To Upgrade To:'), T(pysimplegui_user_settings.get('-upgrade recommendation-',''))],
+                                         [T(pysimplegui_user_settings.get('-upgrade message 1-',''))],
+                                         [T(pysimplegui_user_settings.get('-upgrade message 2-',''))],
+                                         [Checkbox('Show Only Critical Messages', default=pysimplegui_user_settings.get('-upgrade show only critical-', False), key='-UPGRADE SHOW ONLY CRITICAL-', enable_events=True)],
+                                         [Button('Show Notification Again'),
+],
+                                         ]
+    tab_upgrade = Tab('Upgrade\n',upgrade_recommendation_tab_layout,  expand_x=True)
+
 
     tab1 = Tab('Graph\n', frame6, tooltip='Graph is in here', title_color='red')
     tab2 = Tab('CB, Radio\nList, Combo',
@@ -26243,7 +26542,6 @@ def _create_main_window():
     tab6 = Tab('Course or\nSponsor', frame7, k='-TAB SPONSOR-')
     tab7 = Tab('Popups\n', pop_test_tab_layout, k='-TAB POPUP-')
     tab8 = Tab('Themes\n', themes_tab_layout, k='-TAB THEMES-')
-    tab9 = Tab('Global\nSettings', global_settings_tab_layout, k='-TAB GlOBAL SETTINGS-')
 
     def VerLine(version, description, justification='r', size=(40, 1)):
         return [T(version, justification=justification, font='Any 12', text_color='yellow', size=size, pad=(0,0)), T(description, font='Any 12', pad=(0,0))]
@@ -26262,7 +26560,7 @@ def _create_main_window():
 
     layout_bottom = [
         [B(SYMBOL_DOWN, pad=(0, 0), k='-HIDE TABS-'),
-         pin(Col([[TabGroup([[tab1, tab2, tab3, tab6, tab4, tab5, tab7, tab8, tab9]], key='-TAB_GROUP-')]], k='-TAB GROUP COL-'))],
+         pin(Col([[TabGroup([[tab1, tab2, tab3, tab6, tab4, tab5, tab7, tab8, tab_upgrade]], key='-TAB_GROUP-')]], k='-TAB GROUP COL-'))],
         [B('Button', highlight_colors=('yellow', 'red'),pad=(1, 0)),
          B('ttk Button', use_ttk_buttons=True, tooltip='This is a TTK Button',pad=(1, 0)),
          B('See-through Mode', tooltip='Make the background transparent',pad=(1, 0)),
@@ -26365,7 +26663,7 @@ def main():
         elif event.startswith('See'):
             window._see_through = not window._see_through
             window.set_transparent_color(theme_background_color() if window._see_through else '')
-        elif event == '-INSTALL-':
+        elif event in ('-INSTALL-', '-UPGRADE FROM GITHUB-'):
             _upgrade_gui()
         elif event == 'Popup':
             popup('This is your basic popup', keep_on_top=True)
@@ -26378,7 +26676,7 @@ def main():
         elif event == 'Get Text':
             popup_scrolled('Returned:', popup_get_text('Enter some text', keep_on_top=True))
         elif event.startswith('-UDEMY-'):
-                webbrowser.open_new_tab(r'https://www.udemy.com/course/pysimplegui/?couponCode=A2E4F6B1B75EC3D90133')
+                webbrowser.open_new_tab(r'https://www.udemy.com/course/pysimplegui/?couponCode=9AF99B123C49D51EB547')
         elif event.startswith('-SPONSOR-'):
             if webbrowser_available:
                 webbrowser.open_new_tab(r'https://www.paypal.me/pythongui')
@@ -26386,9 +26684,8 @@ def main():
             if webbrowser_available:
                 webbrowser.open_new_tab(r'https://www.buymeacoffee.com/PySimpleGUI')
         elif event in  ('-EMOJI-HEARTS-', '-HEART-', '-PYTHON HEARTS-'):
-            popup_scrolled("Oh look!  It's a Udemy discount coupon!", 'A2E4F6B1B75EC3D90133',
+            popup_scrolled("Oh look!  It's a Udemy discount coupon!", '9AF99B123C49D51EB547',
                            'A personal message from Mike -- thank you so very much for supporting PySimpleGUI!', title='Udemy Coupon', image=EMOJI_BASE64_MIKE, keep_on_top=True)
-
         elif event == 'Themes':
             search_string = popup_get_text('Enter a search term or leave blank for all themes', 'Show Available Themes', keep_on_top=True)
             if search_string is not None:
@@ -26436,6 +26733,15 @@ def main():
             window.minimize()
             main_open_github_issue()
             window.normal()
+        elif event == 'Show Notification Again':
+            if not running_trinket():
+                pysimplegui_user_settings.set('-upgrade info seen-', False)
+            __show_previous_upgrade_information()
+        elif event == '-UPGRADE SHOW ONLY CRITICAL-':
+            if not running_trinket():
+                pysimplegui_user_settings.set('-upgrade show only critical-', values['-UPGRADE SHOW ONLY CRITICAL-'])
+
+
         i += 1
         # _refresh_debugger()
     print('event = ', event)
@@ -26543,7 +26849,10 @@ if _mac_should_set_alpha_to_99():
     # Applyting Mac OS 12.3+ Alpha Channel fix.  Sets the default Alpha Channel to 0.99
     set_options(alpha_channel=0.99)
 
- 
+
+__perform_upgrade_check()
+
+
 # -------------------------------- ENTRY POINT IF RUN STANDALONE -------------------------------- #
 if __name__ == '__main__':
     # To execute the upgrade from command line, type:

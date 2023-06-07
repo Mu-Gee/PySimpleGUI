@@ -1,3 +1,56 @@
+[mrtnbm](https://github.com/mrtnbm) 2023-05-25T16:24:22Z
+Thanks to PSG, I've created the nicest GUI I've ever made that I'm now using for my own little naive prompt lib.
+
+- Main window:
+![image](https://github.com/PySimpleGUI/PySimpleGUI/assets/49289399/1a234b86-9457-4d10-8080-ea064e915397)
+
+- Edit Window:
+![image](https://github.com/PySimpleGUI/PySimpleGUI/assets/49289399/faf9adc7-6de7-42c7-b405-05e5bf081095)
+
+The heart can be clicked and will change to outline or fill mode.
+
+ - For reference, here is a screenshot without rescaling:
+ 
+![image](https://github.com/PySimpleGUI/PySimpleGUI/assets/49289399/55a72eec-56d7-4442-b660-b42e122be488)
+
+-----------
+
+[eagleEggs](https://github.com/eagleEggs) 2023-05-24T04:03:28Z
+Started this a few days ago. Thanks to PSG it has already proven the hypothesis as valid - Streamlining novel development in a curated parameter driven manner with op3nAI API. Much more functionality to add in, but what an amazing GUI framework <3 <3 <3 And thanks to @jason990420 for all of the tkinter hacks he's posted which has always covered everything I've needed :)
+
+![image](https://github.com/PySimpleGUI/PySimpleGUI/assets/29800532/5751e594-4748-431b-a1b2-76b1b7f346db)
+
+
+-----------
+
+[gnuchanos](https://github.com/gnuchanos) 2023-05-24T02:35:07Z
+![2023-05-24-053345_1280x1024_scrot](https://github.com/PySimpleGUI/PySimpleGUI/assets/117280480/acb7b360-af3a-4ec1-a226-a35d76676167)
+not finish yet
+
+-----------
+
+[PySimpleGUI](https://github.com/PySimpleGUI) 2023-05-12T09:55:03Z
+I saw this awesome screenshot:
+
+![image](https://github.com/PySimpleGUI/PySimpleGUI/assets/46163555/98b78824-5286-4183-bb92-0d6fc5405270)
+
+posted in the readme for this project:
+
+https://github.com/bsanders2/FrosthavenApp
+
+It's got a nice design and the custom buttons look great.
+
+-----------
+
+[Kinetikal](https://github.com/Kinetikal) 2023-04-19T09:55:26Z
+I've been using PySimpleGUI to make a GUI for the Chocolatey Package Manager, thought of sending a screenshot of it here.
+
+![Chocolatey-GUI](https://user-images.githubusercontent.com/93329694/233038905-5a3b1f42-4794-4c6e-8411-f70f8fa79723.png)
+
+Thanks for this amazing module, I'm really having fun learning it!
+
+-----------
+
 [PySimpleGUI](https://github.com/PySimpleGUI) 2023-03-16T18:56:49Z
 @ssweber the color scheme looks like the `GrayGrayGray` theme to me which means no colors will be added (all system defaults will be used).  The important feature that's adding the images is either `Image` elements or `Button` elements.  Using a Base64 version of images will enable you to drop them directly into your source code.  The PySimpleGUI application `psgresizer` is very helpful in enabling you to quickly add button graphics to your application.
 
@@ -172,14 +225,14 @@ https://www.youtube.com/watch?v=tPCHCc-GiHM
 
 -----------
 
-[kubilayyalcinyt](https://github.com/kubilayyalcinyt) 2022-12-18T21:41:57Z
+[gnuchanos](https://github.com/gnuchanos) 2022-12-18T21:41:57Z
 ![2022-12-19-003757_1280x1012_scrot](https://user-images.githubusercontent.com/117280480/208321005-c731df95-a680-4fb7-8682-5c9b86bd6afb.png)
 this is what ı say ı can't do like my tiling manager
 
 
 -----------
 
-[kubilayyalcinyt](https://github.com/kubilayyalcinyt) 2022-12-18T21:05:02Z
+[gnuchanos](https://github.com/gnuchanos) 2022-12-18T21:05:02Z
 okay ı try example finish ı ask again
 
 -----------
@@ -189,7 +242,7 @@ okay ı try example finish ı ask again
 
 -----------
 
-[kubilayyalcinyt](https://github.com/kubilayyalcinyt) 2022-12-18T19:36:12Z
+[gnuchanos](https://github.com/gnuchanos) 2022-12-18T19:36:12Z
 ![displayManager](https://user-images.githubusercontent.com/117280480/208315826-fc2172ae-349d-42ba-9cdc-3c828b7e4c26.png)
 ![gnuchanOS_Window_Manager](https://user-images.githubusercontent.com/117280480/208315827-1e8eb182-ea3d-4cb7-8c3f-a093ca58d8ec.png)
 how ı create like this window first login screen second normal window ı try but ı can't do 
@@ -3185,7 +3238,7 @@ Love all the graphics you're including your GUIs.  It adds a level up from the b
 
 -----------
 
-[Scania-Creations-16](https://github.com/Scania-Creations-16) 2021-11-04T02:55:59Z
+[Pranav-P-16](https://github.com/Pranav-P-16) 2021-11-04T02:55:59Z
 Created a Simple Youtube Downloader using PySimpleGUI :blush: 
 
 ![yt1](https://user-images.githubusercontent.com/91425738/140249931-76fdda21-fbdf-42a0-81a7-add95ab122b6.png)
@@ -3200,7 +3253,7 @@ Created a Simple Youtube Downloader using PySimpleGUI :blush:
 
 -----------
 
-[Scania-Creations-16](https://github.com/Scania-Creations-16) 2021-11-01T04:11:56Z
+[Pranav-P-16](https://github.com/Pranav-P-16) 2021-11-01T04:11:56Z
 > You're quite welcome.
 > 
 > **Thank you** @Scania-Creations-16 for posting your screenshot! Awesome awesome creation! I'm impressed!
@@ -3236,7 +3289,7 @@ I'm sure there are things that others can learn.  If you're a beginner, then I'm
 
 -----------
 
-[Scania-Creations-16](https://github.com/Scania-Creations-16) 2021-10-31T04:14:25Z
+[Pranav-P-16](https://github.com/Pranav-P-16) 2021-10-31T04:14:25Z
 I made a Music Player using PySimpleGUI
 
 
